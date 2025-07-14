@@ -226,11 +226,14 @@ func (h *WebHandler) prepareIndexBodyView(r *http.Request, indexData *components
 		Mode:       indexData.Mode,
 	}
 
+	// Extract viewer from cookie once
+	viewer := getViewerFromCookie(r)
+
 	switch {
 	case aliasExists && aliasTarget.Kind == StaticMarkdown:
 		return h.GetMarkdownView(gnourl, aliasTarget.Value)
 	case gnourl.IsRealm(), gnourl.IsPure(), gnourl.IsUser():
-		return h.GetPackageView(gnourl, indexData)
+		return h.GetPackageView(gnourl, indexData, viewer)
 	default:
 		h.Logger.Debug("invalid path: path is neither a pure package or a realm")
 		return http.StatusBadRequest, components.StatusErrorComponent("invalid path")
@@ -255,7 +258,7 @@ func (h *WebHandler) GetMarkdownView(gnourl *weburl.GnoURL, mdContent string) (i
 }
 
 // GetPackageView handles package pages.
-func (h *WebHandler) GetPackageView(gnourl *weburl.GnoURL, indexData *components.IndexData) (int, *components.View) {
+func (h *WebHandler) GetPackageView(gnourl *weburl.GnoURL, indexData *components.IndexData, viewer string) (int, *components.View) {
 	// Handle Help page
 	if gnourl.WebQuery.Has("help") {
 		return h.GetHelpView(gnourl)
@@ -273,17 +276,17 @@ func (h *WebHandler) GetPackageView(gnourl *weburl.GnoURL, indexData *components
 
 	// Handle User page
 	if gnourl.IsUser() {
-		return h.GetUserView(gnourl)
+		return h.GetUserView(gnourl, viewer)
 	}
 
 	// Ultimately get realm view
-	return h.GetRealmView(gnourl, indexData)
+	return h.GetRealmView(gnourl, indexData, viewer)
 }
 
-func (h *WebHandler) GetRealmView(gnourl *weburl.GnoURL, indexData *components.IndexData) (int, *components.View) {
+func (h *WebHandler) GetRealmView(gnourl *weburl.GnoURL, indexData *components.IndexData, viewer string) (int, *components.View) {
 	var content bytes.Buffer
 
-	meta, err := h.Client.RenderRealm(&content, gnourl, h.MarkdownRenderer)
+	meta, err := h.Client.RenderRealm(&content, gnourl, h.MarkdownRenderer, viewer)
 	switch {
 	case err == nil: // ok
 	case errors.Is(err, ErrRenderNotDeclared):
@@ -357,12 +360,12 @@ func CreateUsernameFromBech32(username string) string {
 }
 
 // GetUserView returns the user profile view for a given GnoURL.
-func (h *WebHandler) GetUserView(gnourl *weburl.GnoURL) (int, *components.View) {
+func (h *WebHandler) GetUserView(gnourl *weburl.GnoURL, viewer string) (int, *components.View) {
 	username := strings.TrimPrefix(gnourl.Path, "/u/")
 	var content bytes.Buffer
 
 	// Render user profile realm
-	if _, err := h.Client.RenderRealm(&content, &weburl.GnoURL{Path: "/r/" + username + "/home"}, h.MarkdownRenderer); err != nil {
+	if _, err := h.Client.RenderRealm(&content, &weburl.GnoURL{Path: "/r/" + username + "/home"}, h.MarkdownRenderer, viewer); err != nil {
 		h.Logger.Debug("unable to render user realm", "error", err)
 	}
 
@@ -650,4 +653,15 @@ func generateBreadcrumbPaths(url *weburl.GnoURL) components.BreadcrumbData {
 	}
 
 	return data
+}
+
+// getViewerFromCookie extracts the viewer address from the "helpAddressInput" cookie (Action page).
+// Returns empty string if the cookie is not present or invalid.
+func getViewerFromCookie(r *http.Request) string {
+	cookie, err := r.Cookie("helpAddressInput")
+	if err != nil {
+		return ""
+	}
+
+	return strings.TrimSpace(cookie.Value)
 }

@@ -183,8 +183,7 @@ func (s *HTMLWebClient) QueryPaths(prefix string, limit int) ([]string, error) {
 // RenderRealm renders the content of a realm from a given path
 // and arguments into the provided writer. It uses Goldmark for
 // Markdown processing to generate HTML content.
-func (s *HTMLWebClient) RenderRealm(w io.Writer, u *weburl.GnoURL, cr ContentRenderer) (*RealmMeta, error) {
-	viewer := "g1manfred47kzduec920z88wfr64ylksmdcedlf5" // TODO: get dynamically
+func (s *HTMLWebClient) RenderRealm(w io.Writer, u *weburl.GnoURL, cr ContentRenderer, viewer string) (*RealmMeta, error) {
 	pkgPath := strings.Trim(u.Path, "/")
 
 	var qpath, data string

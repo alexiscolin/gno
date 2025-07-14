@@ -59,7 +59,7 @@ type renderFailClient struct {
 	stubDirectoryClient
 }
 
-func (c *renderFailClient) RenderRealm(w io.Writer, u *weburl.GnoURL, cr gnoweb.ContentRenderer) (*gnoweb.RealmMeta, error) {
+func (c *renderFailClient) RenderRealm(w io.Writer, u *weburl.GnoURL, cr gnoweb.ContentRenderer, viewer string) (*gnoweb.RealmMeta, error) {
 	return nil, errors.New("render failed")
 }
 
@@ -296,7 +296,7 @@ type stubDirectoryClient struct {
 	queryPathsErr error
 }
 
-func (c *stubDirectoryClient) RenderRealm(w io.Writer, u *weburl.GnoURL, cr gnoweb.ContentRenderer) (*gnoweb.RealmMeta, error) {
+func (c *stubDirectoryClient) RenderRealm(w io.Writer, u *weburl.GnoURL, cr gnoweb.ContentRenderer, viewer string) (*gnoweb.RealmMeta, error) {
 	return &gnoweb.RealmMeta{}, nil
 }
 
@@ -661,7 +661,7 @@ type userProfileTestClient struct {
 	stubDirectoryClient
 }
 
-func (c *userProfileTestClient) RenderRealm(w io.Writer, u *weburl.GnoURL, cr gnoweb.ContentRenderer) (*gnoweb.RealmMeta, error) {
+func (c *userProfileTestClient) RenderRealm(w io.Writer, u *weburl.GnoURL, cr gnoweb.ContentRenderer, viewer string) (*gnoweb.RealmMeta, error) {
 	// Simulate user profile content
 	username := strings.TrimPrefix(u.Path, "/r/")
 	username = strings.TrimSuffix(username, "/home")
