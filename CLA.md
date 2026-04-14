@@ -1,5 +1,33 @@
 # Gno.land Contributor License Agreement
 
+## What you're signing
+
+The CLA grants the project rights to use and distribute your contributions under the [GNO Network General Public License](./LICENSE.md). You retain ownership of your work. The full legal text is [below](#full-agreement).
+
+## How to sign
+
+1. **Read the full agreement** [below](#full-agreement) and get the current required hash from [`gno.land/r/sys/cla`](https://gno.land/r/sys/cla).
+2. **Sign from the CLI:**
+
+   ```bash
+   gnokey maketx call \
+     -pkgpath gno.land/r/sys/cla \
+     -func Sign \
+     -args <required_hash> \
+     -gas-fee 1000000ugnot -gas-wanted 2000000 \
+     -broadcast -chainid <chain_id> \
+     -remote <rpc_url> \
+     <keyname>
+   ```
+
+3. **Deploy your package.** Once signed, the CLA check passes automatically for all future deploys from this address.
+
+If the CLA text is updated via a govdao proposal, all signatures are reset — call `Sign` again with the new hash before your next deploy.
+
+## Full agreement
+
+<a id="full-agreement"></a>
+
 **Contributor License Agreement**
 
 This Agreement governs Contributions uploaded, published, or made available for execution on the Gno.land blockchain network (the "Network"), and the related software and repositories used to publish such Contributions.
